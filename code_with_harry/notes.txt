@@ -1,0 +1,2 @@
+package.json --> the dependencies which we installed
+package-lock.json --> the dependencies of dependencies
