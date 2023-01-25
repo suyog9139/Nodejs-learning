@@ -1,8 +1,16 @@
-const http  = require('http')
+const {readFile} = require('fs');
 
-const server = http.createServer((req,res)=>{
-    res.write('Welcome to home page')
-    res.end()
-})
+const getText = (path) =>{
+    return new Promise((resolve, reject) =>{
+        readFile(path,'utf8',(err,data)=>{
+            if(err){
+                reject(err)
+            }
+            resolve(data)
+        })
+    })
+}
 
-server.listen(5000)
+getText('./contents/first.txt')
+    .then(result => console.log(result))
+    .catch(err => console.log(err))
