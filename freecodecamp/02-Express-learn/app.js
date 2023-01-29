@@ -1,46 +1,56 @@
-const http = require('http')
-
-const {readFileSync} = require('fs');
-
-// get all files
-const homePage = readFileSync('./navbar-app/index.html')
-const homeStyles = readFileSync('./navbar-app/styles.css')
-const homeImage = readFileSync('./navbar-app/logo.svg')
-const homeLogic = readFileSync('./navbar-app/browser-app.js')
+const express = require('express');
+const path = require('path');
+const app = express();
+const {products} = require('./data');
 
 
-
-const server = http.createServer((req, res) => {
-
-    const url = req.url;
-    if(url === '/'){
-        console.log('request event')
-        res.writeHead(200,{'Content-Type': 'text/html'})
-        res.write(homePage)
-        res.end()
-    }
-    // styles
-    else if(url === '/styles.css'){
-        res.writeHead(200,{'Content-Type': 'text/css'})
-        res.write(homeStyles)
-        res.end()
-    }
-    // image
-    else if(url === '/logo.svg'){
-        res.writeHead(200,{'Content-Type': 'image/svg'})
-        res.write(homeImage)
-        res.end()
-    }
-    else if(url === '/browser-app.js'){
-        res.writeHead(200,{'Content-Type': 'text/javascript'})
-        res.write(homeLogic)
-        res.end()
-    }
-    else{
-        res.writeHead(404,{'Content-Type': 'text/html'})
-        res.write('<h>404 Page </h> ')
-        res.end()
-    }
+app.get('/',(req,res)=>{
+    res.send('<h>Home Page</h><a href="/api/products">Products</a>')
 })
 
-server.listen(5000) 
+app.get('/api/products',(req,res)=>{
+    const newProducts = products.map((product)=>{
+        const {id,name,image} = product;
+        return {id,name,image}
+    })
+    res.json(newProducts)
+})
+
+app.get('/api/products/:productID',(req,res)=>{
+    const {productID} = req.params;
+    const singleProduct = products.find((product)=>product.id === Number(productID))
+    if(!singleProduct){
+        return res.status(404).send('Product Does Not Exist')
+    }
+    return res.json(singleProduct)
+})
+
+app.get('/api/v1/query',(req, res) => {
+    console.log(req.query)
+    const { search, limit } = req.query 
+    let sortedProducts = [...products]
+    if(search){
+        sortedProducts = sortedProducts.filter((product)=>{
+            return product.name.startsWith(search)
+        })
+    }
+    if(limit){
+        sortedProducts = sortedProducts.slice(0,Number(limit))
+
+    }
+    if(sortedProducts.length < 1){
+        return res.status(200).json({success:true,data:[]}) 
+    }
+    res.status(200).json(sortedProducts)
+})
+
+app.get('/api/products/:productID/reviews/:reviewID',(req,res)=>{
+    console.log(req.params)
+    res.send('Hello World')
+})
+
+
+app.listen(5000,()=>{
+    console.log('Server is listening on port 5000...')      
+})
+
