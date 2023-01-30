@@ -1,34 +1,32 @@
 const express = require('express')
 const app = express()
-const morgan = require('morgan')
-const logger = require('./logger')
-const authorize = require('./authorize')
 
-// req => middleware =>res
+let {people} = require('./data')
 
-// use vs route
-// use is for middleware
-// route is for request handler
-// 2. options - our own / express / third party
+// static assets
+app.use(express.static('./methods-public'))
+// Parse form data
+app.use(express.urlencoded({extended:false}))
 
-// app.use([logger, authorize])
-app.use(morgan('tiny'))
-app.get('/',(req,res) => {
-  
-  res.send('Home Page')
+
+app.post('/login',(req,res)=>{
+  console.log(req.body)
+  const {name} = req.body;
+  if(name){ 
+    return res.status(200).send({name:name})
+  }
+
+  res.status(401).send('  Please provide credentials') 
 })
 
-app.get('/about',(req,res) => {
-  res.send('About Page') 
+
+
+app.get('/api/people',(req,res)=>{
+  res.status(200).json({success:true,data:people})
 })
 
-app.get('/api/products',(req,res) => {
-    res.send('Products Page')
-})
 
-app.get('/api/items',(req,res) => {
-    res.send('Items Page')
-})
+
 
 app.listen(5000, () => {
   console.log('Server is listening on port 5000....')
